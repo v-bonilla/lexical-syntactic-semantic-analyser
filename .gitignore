@@ -8,3 +8,7 @@
 *.iws
 *.iml
 *.ipr
+
+# Coco/R files
+Coco.jar
+doc.atg
