@@ -1,0 +1,90 @@
+////Gramatica
+
+////Simbolos terminales y no terminales
+
+NoTerminales = { P B F T S E I C M X J L Q G H A K W R U D V Z Y N }
+
+Terminales = { function id ( ) = write prompt return var && != + entero cadena , -- if else { } int bool chars }
+
+Axioma = P
+
+Producciones = {
+
+P -> B P
+P -> F P
+P -> lambda
+
+B -> var T id
+B -> S
+B -> if ( E ) I
+
+I -> S
+I -> { C } M
+
+M -> else { C }
+M -> lambda
+
+T -> int
+T -> bool
+T -> chars
+
+S -> id X
+S -> return J
+S -> write ( E )
+S -> prompt ( id )
+
+X -> = E
+X -> ( L )
+
+J -> E
+J -> lambda
+
+L -> E Q
+L -> lambda
+
+Q -> , E Q
+Q -> lambda
+
+C -> B G
+
+G -> C
+G -> lambda
+
+F -> function H id ( A ) { C }
+
+H -> T
+H -> lambda
+
+A -> T id K
+A -> lambda
+
+K -> , T id K
+K -> lambda
+
+E -> W R
+
+R -> && W
+R -> lambda
+
+W -> U D
+
+D -> != U
+D -> lambda
+
+U -> V Z
+
+Z -> + V
+Z -> lambda
+
+V -> id Y
+V -> entero
+V -> cadena
+V -> ( E )
+
+Y -> N
+Y -> ( E )
+
+N -> --
+N -> lambda
+
+}

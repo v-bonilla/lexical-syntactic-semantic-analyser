@@ -1,0 +1,241 @@
+
+First & follow symbols:
+----------------------
+
+P
+first:   id function write prompt return if var 
+follow:  EOF 
+
+B
+first:   id write prompt return if var 
+follow:  EOF id function write prompt return if var llaveD 
+
+F
+first:   function 
+follow:  EOF id function write prompt return if var 
+
+T
+first:   int bool chars 
+follow:  id 
+
+S
+first:   id write prompt return 
+follow:  EOF id function write prompt return if var llaveD 
+
+E
+first:   id entero cadena parenI 
+follow:  EOF id function write prompt return if var coma parenD llaveD 
+
+I
+first:   id write prompt return llaveI 
+follow:  EOF id function write prompt return if var llaveD 
+
+C
+first:   id write prompt return if var 
+follow:  llaveD 
+
+M
+first:   else 
+follow:  EOF id function write prompt return if var llaveD 
+
+X
+first:   igual parenI 
+follow:  EOF id function write prompt return if var llaveD 
+
+J
+first:   id entero cadena parenI 
+follow:  EOF id function write prompt return if var llaveD 
+
+L
+first:   id entero cadena parenI 
+follow:  parenD 
+
+Q
+first:   coma 
+follow:  parenD 
+
+G
+first:   id write prompt return if var 
+follow:  llaveD 
+
+H
+first:   int bool chars 
+follow:  id 
+
+A
+first:   int bool chars 
+follow:  parenD 
+
+K
+first:   coma 
+follow:  parenD 
+
+W
+first:   id entero cadena parenI 
+follow:  EOF id function write prompt return if var and coma parenD llaveD 
+
+R
+first:   and 
+follow:  EOF id function write prompt return if var coma parenD llaveD 
+
+U
+first:   id entero cadena parenI 
+follow:  EOF id function write prompt return if var and diferente coma parenD 
+         llaveD 
+
+D
+first:   diferente 
+follow:  EOF id function write prompt return if var and coma parenD llaveD 
+
+V
+first:   id entero cadena parenI 
+follow:  EOF id function write prompt return if var and diferente suma coma 
+         parenD llaveD 
+
+Z
+first:   suma 
+follow:  EOF id function write prompt return if var and diferente coma parenD 
+         llaveD 
+
+Y
+first:   pdecre parenI 
+follow:  EOF id function write prompt return if var and diferente suma coma 
+         parenD llaveD 
+
+N
+first:   pdecre 
+follow:  EOF id function write prompt return if var and diferente suma coma 
+         parenD llaveD 
+
+
+Cross reference list:
+--------------------
+
+  A             -84   80
+  B             -49   46   76
+  C             -76   54   56   78   80
+  D             -94   92
+  E             -88   51   64   67   70   72   74  103  106
+  F             -80   47
+  G             -78   76
+  H             -82   80
+  I             -53   51
+  J             -70   63
+  K             -86   84   86
+  L             -72   68
+  M             -56   54
+  N            -108  105
+  P             -46   46   47
+  Q             -74   72   74
+  R             -90   88
+  S             -62   50   53
+  T             -58   49   82   84   86
+  U             -96   92   94
+  V            -100   96   98
+  W             -92   88   90
+  X             -67   62
+  Y            -105  100
+  Z             -98   96
+  and            90
+  bool           59
+  cadena        102
+  chars          60
+  coma           74   86
+  diferente      94
+  else           56
+  entero        101
+  function       80
+  id             49   62   65   80   84   86  100
+  if             51
+  igual          67
+  int            58
+  llaveD         54   56   80
+  llaveI         54   56   80
+  parenD         51   64   65   68   80  103  106
+  parenI         51   64   65   68   80  103  106
+  pdecre        108
+  prompt         65
+  return         63
+  suma           98
+  var            49
+  write          64
+
+
+Symbol Table:
+------------
+
+ nr name           typ  hasAt graph  del   line tokenKind
+  0 EOF            t    false                 0 fixedToken
+  1 id             t    false                15 classLitToken
+  2 entero         t    false                16 classToken
+  3 cadena         t    false                17 classToken
+  4 function       t    false                18 litToken
+  5 write          t    false                19 litToken
+  6 prompt         t    false                20 litToken
+  7 return         t    false                21 litToken
+  8 if             t    false                22 litToken
+  9 else           t    false                23 litToken
+ 10 var            t    false                24 litToken
+ 11 int            t    false                25 litToken
+ 12 bool           t    false                26 litToken
+ 13 chars          t    false                27 litToken
+ 14 igual          t    false                28 fixedToken
+ 15 and            t    false                29 fixedToken
+ 16 diferente      t    false                30 fixedToken
+ 17 suma           t    false                31 fixedToken
+ 18 pdecre         t    false                32 fixedToken
+ 19 coma           t    false                33 fixedToken
+ 20 parenI         t    false                34 fixedToken
+ 21 parenD         t    false                35 fixedToken
+ 22 llaveI         t    false                36 fixedToken
+ 23 llaveD         t    false                37 fixedToken
+ 24 ???            t    false                 0 fixedToken
+  0 P              nt   false     7 false    46 fixedToken
+  1 B              nt   false    13 false    49 fixedToken
+  2 F              nt   false    76 false    80 fixedToken
+  3 T              nt   false    35 false    58 fixedToken
+  4 S              nt   false    44 false    62 fixedToken
+  5 E              nt   false    97 false    88 fixedToken
+  6 I              nt   false    27 false    53 fixedToken
+  7 C              nt   false    72 false    76 fixedToken
+  8 M              nt   false    29 false    56 fixedToken
+  9 X              nt   false    62 false    67 fixedToken
+ 10 J              nt   false    64 false    70 fixedToken
+ 11 L              nt   false    65 false    72 fixedToken
+ 12 Q              nt   false    68 false    74 fixedToken
+ 13 G              nt   false    75 false    78 fixedToken
+ 14 H              nt   false    87 false    82 fixedToken
+ 15 A              nt   false    88 false    84 fixedToken
+ 16 K              nt   false    92 false    86 fixedToken
+ 17 W              nt   false   102 false    92 fixedToken
+ 18 R              nt   false   100 false    90 fixedToken
+ 19 U              nt   false   107 false    96 fixedToken
+ 20 D              nt   false   105 false    94 fixedToken
+ 21 V              nt   false   115 false   100 fixedToken
+ 22 Z              nt   false   110 false    98 fixedToken
+ 23 Y              nt   false   128 true    105 fixedToken
+ 24 N              nt   false   130 false   108 fixedToken
+
+Literal Tokens:
+--------------
+_else = "else".
+_parenD = ")".
+_coma = ",".
+_if = "if".
+_prompt = "prompt".
+_int = "int".
+_return = "return".
+_write = "write".
+_and = "&&".
+_var = "var".
+_diferente = "!=".
+_pdecre = "--".
+_llaveD = "}".
+_parenI = "(".
+_suma = "+".
+_function = "function".
+_bool = "bool".
+_igual = "=".
+_llaveI = "{".
+_chars = "chars".
+

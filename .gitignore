@@ -9,6 +9,6 @@
 *.iml
 *.ipr
 
-# Coco/R files
+### Coco/R files ###
 Coco.jar
-doc.atg
+*.frame

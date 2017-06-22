@@ -1,0 +1,110 @@
+COMPILER P
+
+CHARACTERS
+  cr  			= '\r'.
+  lf  			= '\n'.
+  tab  			= '\t'.
+  letter   		= 'A' .. 'Z' + 'a' .. 'z'.
+  digit    		= '0' .. '9'.
+  zero 			= '0'.
+  nonZeroDigit 	= '1' .. '9'.
+  charInLine    = ANY - '\r' - '\n'.
+  anyButDoubleQuote = charInLine - '\"'.
+
+TOKENS
+  id			= letter { letter | digit } .
+  entero		= zero | (nonZeroDigit {digit}) .
+  cadena		= '"' {anyButDoubleQuote | "\\\""} '"'.
+  function		= "function" .
+  write			= "write" .
+  prompt		= "prompt" .
+  return		= "return" .
+  if			= "if" .
+  else			= "else" .
+  var			= "var" .
+  int			= "int" .
+  bool			= "bool" .
+  chars			= "chars" .
+  igual			= "=" .
+  and			= "&&" .
+  diferente		= "!=" .
+  suma			= "+" .
+  pdecre		= "--" .
+  coma			= "," .
+  parenI		= "(" .
+  parenD		= ")" .
+  llaveI		= "{" .
+  llaveD		= "}" .
+
+
+COMMENTS FROM "/*" TO "*/"
+
+IGNORE lf + cr + tab
+
+PRODUCTIONS
+
+P = B [P]
+	| F [P] .
+
+B = var T id
+  | S
+  | if parenI E parenD I .
+
+I = S
+  | llaveI C llaveD [M] .
+
+M = else llaveI C llaveD .
+
+T = int
+	| bool
+	| chars .
+
+S = id X
+  | return [J]
+  | write parenI E parenD
+  | prompt parenI id parenD .
+
+X = igual E
+  | parenI [L] parenD .
+
+J = E .
+
+L = E [Q] .
+
+Q = coma E [Q] .
+
+C = B [G] .
+
+G = C .
+
+F = function [H] id parenI [A] parenD llaveI C llaveD .
+
+H = T .
+
+A = T id [K] .
+
+K = coma T id [K] .
+
+E = W [R] .
+
+R = and W .
+
+W = U [D] .
+
+D = diferente U .
+
+U = V [Z] .
+
+Z = suma V .
+
+V = id Y
+  | entero
+  | cadena
+  | parenI E parenD .
+
+Y = [N]
+  | parenI E parenD .
+
+N = pdecre .
+
+END P .
