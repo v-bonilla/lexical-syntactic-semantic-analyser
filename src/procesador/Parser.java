@@ -194,7 +194,7 @@ public class Parser {
 		tsActual.insertaTipo(lex, tipo);
 	}
 
-	public void insertaFunctionEnTSActual(String lex, String tipo, int idTablaF, int nParam){
+	public void insertaFuncionEnTSActual(String lex, String tipo, int idTablaF, int nParam){
 		tsActual.insertaLex(lex, true);
 		tsActual.insertaTipo(lex, tipo);
 		tsActual.insertaIdTabla(lex, idTablaF);
