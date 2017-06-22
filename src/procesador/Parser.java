@@ -1,5 +1,11 @@
 package procesador;
 
+import ts.TablaSimbolos;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.LinkedList;
+
 public class Parser {
 	public static final int _EOF = 0;
 	public static final int _id = 1;
@@ -38,11 +44,135 @@ public class Parser {
 	public Scanner scanner;
 	public Errors errors;
 
-	
+	// Atributos para archivos y punteros de escritura
+	public FileWriter listaTokens = null;
+	public FileWriter parse = null;
+	public FileWriter tablaSimbolos = null;
+	public PrintWriter pwLT = null;
+	public PrintWriter pwP = null;
+	public PrintWriter pwTS = null;
+
+	// Usada por writeToken para ver si ha llegado al final del fichero
+	public boolean eof = false;
+
+	public LinkedList<TablaSimbolos> pilaTS = new LinkedList<TablaSimbolos>();
+	public int idTabla = 1;
+	public TablaSimbolos tsGlobal = new TablaSimbolos("Global", this.idTabla);
+	public TablaSimbolos tsActual;
 
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
+		// Declaramos archivos y punteros de escritura
+		try {
+			listaTokens = new FileWriter("lista de tokens.txt");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		pwLT = new PrintWriter(listaTokens);
+
+		try {
+			parse = new FileWriter("parse.txt");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		pwP = new PrintWriter(parse);
+
+		try {
+			tablaSimbolos = new FileWriter("tabla de simbolos.txt");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		pwTS = new PrintWriter(tablaSimbolos);
+	}
+
+	public TablaSimbolos getTsActual() {
+		return tsActual;
+	}
+
+	public void setTsActual(TablaSimbolos tsActual) {
+		this.tsActual = tsActual;
+	}
+
+	public void writeToken(String t){
+		if (!eof){
+			if (t.contentEquals("document.write"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("function"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("prompt"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("return"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("if"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("else"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("var"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("int"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("bool"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("chars"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("void"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("="))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("&&"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("!="))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("+"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("--"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals(","))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("("))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals(")"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("{"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("}"))
+				pwLT.println("< " + t + " , - >");
+			else if (t.contentEquals("")){
+				pwLT.println("< eof , - >");
+				eof = true;
+			}
+			else if (t.startsWith("\""))
+				pwLT.println("< cadena , " + t + " >");
+			else if (t.startsWith("0") || t.startsWith("1") || t.startsWith("2") || t.startsWith("3") || t.startsWith("4")
+					|| t.startsWith("5") || t.startsWith("6") || t.startsWith("7") || t.startsWith("8") || t.startsWith("9"))
+				pwLT.println("< entero , " + t + " >");
+		}
+	}
+
+	public void closeFiles(){
+		for (TablaSimbolos ts : pilaTS){
+			ts.toString(pwTS);
+		}
+		// Cierra ficheros
+		if (null != listaTokens)
+			try {
+				listaTokens.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		if(null != parse)
+			try {
+				parse.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		if(null != tablaSimbolos)
+			try {
+				tablaSimbolos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 	}
 
 	void SynErr (int n) {
@@ -59,6 +189,7 @@ public class Parser {
 		for (;;) {
 			t = la;
 			la = scanner.Scan();
+			writeToken(la.val);
 			if (la.kind <= maxT) {
 				++errDist;
 				break;
@@ -100,26 +231,44 @@ public class Parser {
 	
 	void P() {
 		if (StartOf(1)) {
+			// 1. P -> B P
+			boolean l = true;
+			pwP.print(" 1");
 			B();
 			if (StartOf(2)) {
 				P();
+				l = false;
 			}
+			// 3. P -> lambda
+			if (l) {pwP.print(" 3");/* tsActual.insertaLex("eof", false); tsActual.insertaTipo("eof", "pal. reservada");*/}
 		} else if (la.kind == 4) {
+			// 2. P -> F P
+			boolean l = true;
+			pwP.print(" 2");
 			F();
 			if (StartOf(2)) {
 				P();
+				l = false;
 			}
+			// 3. P -> lambda
+			if (l) {pwP.print(" 3");/* tsActual.insertaLex("eof", false); tsActual.insertaTipo("eof", "pal. reservada");*/}
 		} else SynErr(25);
 	}
 
 	void B() {
 		if (la.kind == 10) {
+			// 4. B -> var T id
+			pwP.print(" 4");
 			Get();
 			T();
 			Expect(1);
 		} else if (StartOf(3)) {
+			// 5. B -> S
+			pwP.print(" 5");
 			S();
 		} else if (la.kind == 8) {
+			// 6. B -> if ( E ) I
+			pwP.print(" 6");
 			Get();
 			Expect(20);
 			E();
@@ -129,15 +278,25 @@ public class Parser {
 	}
 
 	void F() {
+		// 29. F -> function H id ( A ) { C }
+		boolean lH = true;
+		boolean lA = true;
+		pwP.print(" 29");
 		Expect(4);
 		if (la.kind == 11 || la.kind == 12 || la.kind == 13) {
 			H();
+			lH = false;
 		}
+		// 31. H -> lambda
+		if (lH) pwP.print(" 31");
 		Expect(1);
 		Expect(20);
 		if (la.kind == 11 || la.kind == 12 || la.kind == 13) {
 			A();
+			lA = false;
 		}
+		// 33. H -> lambda
+		if (lA) pwP.print(" 33");
 		Expect(21);
 		Expect(22);
 		C();
@@ -146,29 +305,47 @@ public class Parser {
 
 	void T() {
 		if (la.kind == 11) {
+			// 11. T -> int
+			pwP.print(" 11");
 			Get();
 		} else if (la.kind == 12) {
+			// 12. T -> bool
+			pwP.print(" 12");
 			Get();
 		} else if (la.kind == 13) {
+			// 13. T -> chars
+			pwP.print(" 13");
 			Get();
 		} else SynErr(27);
 	}
 
 	void S() {
+		// 14. S -> id X
 		if (la.kind == 1) {
+			pwP.print(" 14");
 			Get();
 			X();
 		} else if (la.kind == 7) {
+			// 15. S -> return J
+			boolean l = true;
+			pwP.print(" 15");
 			Get();
 			if (StartOf(4)) {
 				J();
+				l = false;
 			}
+			// 21. J -> lambda
+			if (l) pwP.print(" 21");
 		} else if (la.kind == 5) {
+			// 16. S -> write ( E )
+			pwP.print(" 16");
 			Get();
 			Expect(20);
 			E();
 			Expect(21);
 		} else if (la.kind == 6) {
+			// 17. S -> prompt ( id )
+			pwP.print(" 17");
 			Get();
 			Expect(20);
 			Expect(1);
@@ -177,33 +354,55 @@ public class Parser {
 	}
 
 	void E() {
+		// 36. E -> W R
+		boolean l = true;
+		pwP.print(" 36");
 		W();
 		if (la.kind == 15) {
 			R();
+			l = false;
 		}
+		// 38. R -> lambda
+		if (l) pwP.print(" 38");
 	}
 
 	void I() {
 		if (StartOf(3)) {
+			// 7. I -> S
+			pwP.print(" 7");
 			S();
 		} else if (la.kind == 22) {
+			// 8. I -> { C } M
+			boolean l = true;
+			pwP.print(" 8");
 			Get();
 			C();
 			Expect(23);
 			if (la.kind == 9) {
 				M();
+				l = false;
 			}
+			// 10. M -> lambda
+			if (l) pwP.print(" 10");
 		} else SynErr(29);
 	}
 
 	void C() {
+		// 26. C -> B G
+		boolean l = true;
+		pwP.print(" 26");
 		B();
 		if (StartOf(1)) {
 			G();
+			l = false;
 		}
+		// 28. G -> lambda
+		if (l) pwP.print(" 28");
 	}
 
 	void M() {
+		// 9. M -> else { C }
+		pwP.print(" 9");
 		Expect(9);
 		Expect(22);
 		C();
@@ -212,94 +411,156 @@ public class Parser {
 
 	void X() {
 		if (la.kind == 14) {
+			// 18. X -> = E
+			pwP.print(" 18");
 			Get();
 			E();
 		} else if (la.kind == 20) {
+			// 19. X -> ( L )
+			boolean l = true;
+			pwP.print(" 19");
 			Get();
 			if (StartOf(4)) {
 				L();
+				l = false;
 			}
 			Expect(21);
+			// 23. L -> lambda
+			if (l) pwP.print(" 23");
 		} else SynErr(30);
 	}
 
 	void J() {
+		// 20. J -> E
+		pwP.print(" 20");
 		E();
 	}
 
 	void L() {
+		// 22. L -> E Q
+		boolean l = true;
+		pwP.print(" 22");
 		E();
 		if (la.kind == 19) {
 			Q();
+			l = false;
 		}
+		// 25. Q -> lambda
+		if (l) pwP.print(" 25");
 	}
 
 	void Q() {
+		// 24. Q -> , E Q
+		boolean l = true;
+		pwP.print(" 24");
 		Expect(19);
 		E();
 		if (la.kind == 19) {
 			Q();
+			l = false;
 		}
+		// 25. Q -> lambda
+		if (l) pwP.print(" 25");
 	}
 
 	void G() {
+		// 27. G -> C
+		pwP.print(" 27");
 		C();
 	}
 
 	void H() {
+		// 30. H -> T
+		pwP.print(" 30");
 		T();
 	}
 
 	void A() {
+		// 32. A -> T id K
+		boolean l = true;
+		pwP.print(" 32");
 		T();
 		Expect(1);
 		if (la.kind == 19) {
 			K();
+			l = false;
 		}
+		// 35. K -> lambda
+		if (l) pwP.print(" 35");
 	}
 
 	void K() {
+		// 34. K -> , T id K
+		boolean l = true;
+		pwP.print(" 34");
 		Expect(19);
 		T();
 		Expect(1);
 		if (la.kind == 19) {
 			K();
+			l = false;
 		}
+		// 35. K -> lambda
+		if (l) pwP.print(" 35");
 	}
 
 	void W() {
+		// 39. W -> U D
+		boolean l = true;
+		pwP.print(" 39");
 		U();
 		if (la.kind == 16) {
 			D();
+			l = false;
 		}
+		// 41. D -> lambda
+		if (l) pwP.print(" 41");
 	}
 
 	void R() {
+		// 37. R -> && W
+		pwP.print(" 37");
 		Expect(15);
 		W();
 	}
 
 	void U() {
+		// 42. U -> V Z
+		boolean l = true;
+		pwP.print(" 42");
 		V();
 		if (la.kind == 17) {
 			Z();
+			l = false;
 		}
+		// 44. Z -> lambda
+		if (l) pwP.print(" 44");
 	}
 
 	void D() {
+		// 40. D -> != U
+		pwP.print(" 40");
 		Expect(16);
 		U();
 	}
 
 	void V() {
 		if (la.kind == 1) {
+			// 45. V -> id Y
+			pwP.print(" 45");
 			Get();
 			Y();
 		} else if (la.kind == 2) {
+			// 46. V -> entero
+			pwP.print(" 46");
 			Get();
 		} else if (la.kind == 3) {
+			// 47. V -> cadena
+			pwP.print(" 47");
 			Get();
 		} else if (la.kind == 20) {
+			// 48. V -> ( E )
+			pwP.print(" 48");
 			Get();
 			E();
 			Expect(21);
@@ -307,16 +568,26 @@ public class Parser {
 	}
 
 	void Z() {
+		// 43. Z -> + V
+		pwP.print(" 43");
 		Expect(17);
 		V();
 	}
 
 	void Y() {
 		if (StartOf(5)) {
+			// 49. Y -> N
+			boolean l = true;
+			pwP.print(" 49");
 			if (la.kind == 18) {
 				N();
+				l = false;
 			}
+			// 52. N -> lambda
+			if (l) pwP.print(" 52");
 		} else if (la.kind == 20) {
+			// 50. Y -> ( E )
+			pwP.print(" 50");
 			Get();
 			E();
 			Expect(21);
@@ -324,18 +595,21 @@ public class Parser {
 	}
 
 	void N() {
+		// 51. N -> --
+		pwP.print(" 51");
 		Expect(18);
 	}
 
 
 
 	public void Parse() {
+		pwP.print("D");
 		la = new Token();
 		la.val = "";		
 		Get();
 		P();
 		Expect(0);
-
+		closeFiles();
 	}
 
 	private static final boolean[][] set = {
