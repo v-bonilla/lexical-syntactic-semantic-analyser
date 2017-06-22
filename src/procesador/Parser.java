@@ -1,4 +1,4 @@
-
+package procesador;
 
 public class Parser {
 	public static final int _EOF = 0;
