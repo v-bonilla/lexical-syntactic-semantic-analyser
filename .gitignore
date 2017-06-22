@@ -12,3 +12,6 @@
 ### Coco/R files ###
 Coco.jar
 *.frame
+
+### Binaries ###
+/bin/
