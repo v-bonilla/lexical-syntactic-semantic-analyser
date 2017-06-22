@@ -1,4 +1,4 @@
-package proyecto;
+package ts;
 
 import java.io.PrintWriter;
 import java.util.LinkedList;
