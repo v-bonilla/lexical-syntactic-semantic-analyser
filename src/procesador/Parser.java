@@ -175,6 +175,33 @@ public class Parser {
 			}
 	}
 
+	public void createAndPushTS(String name){
+		idTabla++;
+		// El nombre se suele extraer del token
+		TablaSimbolos ts = new TablaSimbolos(name, idTabla);
+		pilaTS.add(ts);
+		tsActual = ts;
+	}
+
+	public void popTS(){
+		// Puesto que no se pueden declarar funciones dentro de una funcion, solo hay un nivel de tablas
+		// No se destruye la tabla a hacer pop para pintarla al final de la ejecucion
+		tsActual = tsGlobal;
+	}
+
+	public void insertaIdEnTSActual(String lex, String tipo){
+		tsActual.insertaLex(lex, false);
+		tsActual.insertaTipo(lex, tipo);
+	}
+
+	public void insertaFunctionEnTSActual(String lex, String tipo, int idTablaF, int nParam){
+		tsActual.insertaLex(lex, true);
+		tsActual.insertaTipo(lex, tipo);
+		tsActual.insertaIdTabla(lex, idTablaF);
+		tsActual.insertaNParam(lex, nParam);
+		//TODO: insertaTipoParam
+	}
+
 	void SynErr (int n) {
 		if (errDist >= minErrDist) errors.SynErr(la.line, la.col, n);
 		errDist = 0;
@@ -262,6 +289,9 @@ public class Parser {
 			Get();
 			T();
 			Expect(1);
+			//TODO: Insertar el id de la funcion en la TS
+			// Añade el token id en la lista de tokens con su posicion en la TS
+			pwLT.println("< " + t.val + " , " + tsActual.buscaReg(t.val) + " >");
 		} else if (StartOf(3)) {
 			// 5. B -> S
 			pwP.print(" 5");
@@ -290,6 +320,9 @@ public class Parser {
 		// 31. H -> lambda
 		if (lH) pwP.print(" 31");
 		Expect(1);
+		//TODO: Insertar el id de la funcion en la TS
+		// Añade el token id en la lista de tokens con su posicion en la TS
+		pwLT.println("< " + t.val + " , " + tsActual.buscaReg(t.val) + " >");
 		Expect(20);
 		if (la.kind == 11 || la.kind == 12 || la.kind == 13) {
 			A();
@@ -607,6 +640,8 @@ public class Parser {
 		la = new Token();
 		la.val = "";		
 		Get();
+		pilaTS.add(tsGlobal);
+		tsActual = tsGlobal;
 		P();
 		Expect(0);
 		closeFiles();
