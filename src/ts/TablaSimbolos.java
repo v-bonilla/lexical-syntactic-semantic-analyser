@@ -122,11 +122,11 @@ public class TablaSimbolos {
 		}
 	}
 	
-	public void insertaTipoParam (String lex, String[] t){
+	public void insertaTipoParam (String lex, String t){
 		if (!registros.isEmpty()){
 			for (Registro r : registros){
 				if (r.getLexema().contentEquals(lex)){
-					r.setTipoParam(t);
+					r.addTipoParam(t);
 				}
 			}
 		}
