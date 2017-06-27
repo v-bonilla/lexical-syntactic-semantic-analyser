@@ -55,10 +55,19 @@ public class Parser {
 	// Usada por writeToken para ver si ha llegado al final del fichero
 	public boolean eof = false;
 
+	// Atributos para las tablas de simbolos
 	public LinkedList<TablaSimbolos> pilaTS = new LinkedList<TablaSimbolos>();
 	public int idTabla = 1;
 	public TablaSimbolos tsGlobal = new TablaSimbolos("Global", this.idTabla);
 	public TablaSimbolos tsActual;
+
+	// Tipos usados por el An. semantico
+	public static final String tipoInt = "int";
+	public static final String tipoBool = "bool";
+	public static final String tipoChars = "charse";
+	public static final String tipoOK = "OK";
+	public static final String tipoERROR = "ERROR";
+	public static final String tipoNULO = "NULO";
 
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
