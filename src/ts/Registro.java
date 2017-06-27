@@ -9,6 +9,7 @@ public class Registro {
 	private int desplazamiento;
 	private int nParametros;
 	private String[] tipoParam;
+	//TODO: tipoRetorno
 	private int idTabla;
 	private boolean funcion;
 	

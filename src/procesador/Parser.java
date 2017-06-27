@@ -202,6 +202,8 @@ public class Parser {
 		//TODO: insertaTipoParam
 	}
 
+	//TODO: funcion que meta en tsGlobal todas las palabras reservadas
+
 	void SynErr (int n) {
 		if (errDist >= minErrDist) errors.SynErr(la.line, la.col, n);
 		errDist = 0;

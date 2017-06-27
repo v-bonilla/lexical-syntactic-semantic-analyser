@@ -53,7 +53,8 @@ public class TablaSimbolos {
 		}
 		return res;
 	}
-	
+
+	// Usado para pintar la lista de tokens
 	public int buscaReg(String lex){
 		int res = -1;
 		if (!registros.isEmpty()){
@@ -65,6 +66,8 @@ public class TablaSimbolos {
 		}
 		return res;
 	}
+
+	//TODO: buscaTipo( String lex), buscaTipoRetorno, buscaTipoParametros
 	
 	public void insertaTipo (String lex, String tipo){
 		if (!registros.isEmpty()){
