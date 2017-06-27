@@ -79,8 +79,16 @@ public class TablaSimbolos {
 		return res;
 	}
 
-	public void buscaTipoParametros(){
-
+	public LinkedList<String> buscaTipoParametros(String lex){
+		LinkedList<String> res = null;
+		if (!registros.isEmpty()){
+			for (Registro r : registros) {
+				if (r.getLexema().contentEquals(lex)) {
+					res = r.getTipoParam();
+				}
+			}
+		}
+		return res;
 	}
 	
 	public void insertaTipo (String lex, String tipo){
