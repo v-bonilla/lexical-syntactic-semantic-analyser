@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 public class Parser {
 	public static final int _EOF = 0;
@@ -208,10 +209,53 @@ public class Parser {
 		tsActual.insertaTipo(lex, tipo);
 		tsActual.insertaIdTabla(lex, idTablaF);
 		tsActual.insertaNParam(lex, nParam);
-		//TODO: insertaTipoParam
 	}
 
-	//TODO: funcion que meta en tsGlobal todas las palabras reservadas
+	public void insertaPalReservadas(){
+		tsGlobal.insertaLex("function", false);
+		tsGlobal.insertaTipo("function", "pal.reservada");
+		tsGlobal.insertaLex("write", false);
+		tsGlobal.insertaTipo("write", "pal.reservada");
+		tsGlobal.insertaLex("prompt", false);
+		tsGlobal.insertaTipo("prompt", "pal.reservada");
+		tsGlobal.insertaLex("return", false);
+		tsGlobal.insertaTipo("return", "pal.reservada");
+		tsGlobal.insertaLex("var", false);
+		tsGlobal.insertaTipo("var", "pal.reservada");
+		tsGlobal.insertaLex("if", false);
+		tsGlobal.insertaTipo("if", "pal.reservada");
+		tsGlobal.insertaLex("else", false);
+		tsGlobal.insertaTipo("else", "pal.reservada");
+		tsGlobal.insertaLex("int", false);
+		tsGlobal.insertaTipo("int", "pal.reservada");
+		tsGlobal.insertaLex("bool", false);
+		tsGlobal.insertaTipo("bool", "pal.reservada");
+		tsGlobal.insertaLex("chars", false);
+		tsGlobal.insertaTipo("chars", "pal.reservada");
+
+	}
+
+	public boolean comparaTipoParametros(LinkedList<String> params1, LinkedList<String> params2){
+		boolean res = false;
+		if (params1.size() == params2.size()){
+			if (!params1.isEmpty() && !params2.isEmpty()){
+				ListIterator it1 = params1.listIterator();
+				ListIterator it2 = params2.listIterator();
+				boolean equals = true;
+				while (it1.hasNext() && it2.hasNext()){
+					String param1 = (String) it1.next();
+					String param2 = (String) it2.next();
+					if (!param1.equals(param2)){
+						equals = false;
+					}
+				}
+				res = equals;
+			}
+			else
+				res = true;
+		}
+		return res;
+	}
 
 	void SynErr (int n) {
 		if (errDist >= minErrDist) errors.SynErr(la.line, la.col, n);
@@ -651,6 +695,7 @@ public class Parser {
 		la = new Token();
 		la.val = "";		
 		Get();
+		insertaPalReservadas();
 		pilaTS.add(tsGlobal);
 		tsActual = tsGlobal;
 		P();
