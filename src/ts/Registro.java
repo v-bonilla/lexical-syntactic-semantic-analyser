@@ -1,6 +1,7 @@
 package ts;
 
 import java.io.PrintWriter;
+import java.util.LinkedList;
 
 public class Registro {
 	private int posicion;
@@ -8,10 +9,13 @@ public class Registro {
 	private String tipo;
 	private int desplazamiento;
 	private int nParametros;
-	private String[] tipoParam;
-	//TODO: tipoRetorno
+	private LinkedList<String> tipoParam;
 	private int idTabla;
 	private boolean funcion;
+
+	public void addTipoParam (String s){
+		tipoParam.add(s);
+	}
 	
 	public Registro(boolean f){
 		this.funcion = f;
@@ -57,11 +61,11 @@ public class Registro {
 		this.nParametros = nParametros;
 	}
 
-	public String[] getTipoParam() {
+	public LinkedList<String> getTipoParam() {
 		return tipoParam;
 	}
 
-	public void setTipoParam(String[] tipoParam) {
+	public void setTipoParam(LinkedList<String> tipoParam) {
 		this.tipoParam = tipoParam;
 	}
 
@@ -80,9 +84,10 @@ public class Registro {
 			pw.println("    + parametros: " + this.nParametros);
 			pw.println("    + idtabla: " + this.idTabla);
 			if (this.nParametros > 0){
-				for (int i = 0; i < this.tipoParam.length; i++){
-					if (tipoParam[i] != null)
-						pw.println("    + tipoparam" + i + ": " + tipoParam[i]);
+				int i = 0;
+				for (String s : tipoParam) {
+					pw.println("    + tipoparam" + i + ": " + s);
+					i++;
 				}
 			}
 		}else{
