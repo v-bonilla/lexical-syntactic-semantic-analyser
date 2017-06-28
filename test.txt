@@ -1,21 +1,12 @@
-var int rojo1
-var bool rojo2
-var chars rojo3
-if (rojo2) prompt(rojo1)
-if (rojo2){
-write(5)
-rojo3 = "cadena erg4"
+var int num
+var chars cad
+num = 5
+num = num--
+cad = "Hola"
+write("Hola")
+prompt(cad)
+function int f1 (int i, chars c){
+    i = 5
+    return i
 }
-else{
-return 0
-}
-function int f1 () {
-return
-}
-function f2 (int azul, bool verde){
-verde = verde && rojo2
-verde = verde != rojo2
-azul = azul + rojo1
-verde = azul-- + (2 + 3)
-f2(rojo1, rojo2)
-}
+f1(cad, num)

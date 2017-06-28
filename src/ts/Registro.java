@@ -12,12 +12,12 @@ public class Registro {
 	private LinkedList<String> tipoParam;
 	private int idTabla;
 	private boolean funcion;
-
-	public void addTipoParam (String s){
-		tipoParam.add(s);
-	}
 	
 	public Registro(boolean f){
+		this.posicion = -1;
+		this.lexema = null;
+		this.tipo = null;
+		this.tipoParam = null;
 		this.funcion = f;
 	}
 

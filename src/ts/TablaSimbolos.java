@@ -76,6 +76,8 @@ public class TablaSimbolos {
 				}
 			}
 		}
+		if (res == null)
+			throw new Error("El id '" + lex + "' no se ha declarado en la tabla de simbolos");
 		return res;
 	}
 
@@ -85,6 +87,20 @@ public class TablaSimbolos {
 			for (Registro r : registros) {
 				if (r.getLexema().contentEquals(lex)) {
 					res = r.getTipoParam();
+				}
+			}
+		}
+//		if (res == null)
+//			throw new Error("El id '" + lex + "' no es una funcion");
+		return res;
+	}
+
+	public String buscaTipoPorId (int id){
+		String res = null;
+		if (!registros.isEmpty()){
+			for (Registro r : registros) {
+				if (r.getIdTabla() == id) {
+					res = r.getTipo();
 				}
 			}
 		}
@@ -130,11 +146,11 @@ public class TablaSimbolos {
 		}
 	}
 	
-	public void insertaTipoParam (String lex, String t){
+	public void insertaTipoParam (String lex, LinkedList<String> list){
 		if (!registros.isEmpty()){
 			for (Registro r : registros){
 				if (r.getLexema().contentEquals(lex)){
-					r.addTipoParam(t);
+					r.setTipoParam(list);
 				}
 			}
 		}

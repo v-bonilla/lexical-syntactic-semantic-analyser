@@ -65,7 +65,7 @@ public class Parser {
 	// Tipos usados por el An. semantico
 	public static final String tipoInt = "int";
 	public static final String tipoBool = "bool";
-	public static final String tipoChars = "charse";
+	public static final String tipoChars = "chars";
 	public static final String tipoOK = "OK";
 	public static final String tipoERROR = "ERROR";
 	public static final String tipoNULO = "NULO";
@@ -204,34 +204,35 @@ public class Parser {
 		tsActual.insertaTipo(lex, tipo);
 	}
 
-	public void insertaFuncionEnTSActual(String lex, String tipo, int idTablaF, int nParam){
+	public void insertaFuncionEnTSActual(String lex, String tipo, int idTablaF, int nParam, LinkedList<String> list){
 		tsActual.insertaLex(lex, true);
 		tsActual.insertaTipo(lex, tipo);
 		tsActual.insertaIdTabla(lex, idTablaF);
 		tsActual.insertaNParam(lex, nParam);
+		tsActual.insertaTipoParam(lex, list);
 	}
 
 	public void insertaPalReservadas(){
 		tsGlobal.insertaLex("function", false);
-		tsGlobal.insertaTipo("function", "pal.reservada");
+		tsGlobal.insertaTipo("function", "pal. reservada");
 		tsGlobal.insertaLex("write", false);
-		tsGlobal.insertaTipo("write", "pal.reservada");
+		tsGlobal.insertaTipo("write", "pal. reservada");
 		tsGlobal.insertaLex("prompt", false);
-		tsGlobal.insertaTipo("prompt", "pal.reservada");
+		tsGlobal.insertaTipo("prompt", "pal. reservada");
 		tsGlobal.insertaLex("return", false);
-		tsGlobal.insertaTipo("return", "pal.reservada");
+		tsGlobal.insertaTipo("return", "pal. reservada");
 		tsGlobal.insertaLex("var", false);
-		tsGlobal.insertaTipo("var", "pal.reservada");
+		tsGlobal.insertaTipo("var", "pal. reservada");
 		tsGlobal.insertaLex("if", false);
-		tsGlobal.insertaTipo("if", "pal.reservada");
+		tsGlobal.insertaTipo("if", "pal. reservada");
 		tsGlobal.insertaLex("else", false);
-		tsGlobal.insertaTipo("else", "pal.reservada");
+		tsGlobal.insertaTipo("else", "pal. reservada");
 		tsGlobal.insertaLex("int", false);
-		tsGlobal.insertaTipo("int", "pal.reservada");
+		tsGlobal.insertaTipo("int", "pal. reservada");
 		tsGlobal.insertaLex("bool", false);
-		tsGlobal.insertaTipo("bool", "pal.reservada");
+		tsGlobal.insertaTipo("bool", "pal. reservada");
 		tsGlobal.insertaLex("chars", false);
-		tsGlobal.insertaTipo("chars", "pal.reservada");
+		tsGlobal.insertaTipo("chars", "pal. reservada");
 
 	}
 
@@ -257,6 +258,17 @@ public class Parser {
 		return res;
 	}
 
+	public String buscaTipoRetorno(){
+		String res = null;
+		if (!tsActual.getNombre().equals(tsGlobal.getNombre())){
+			int idTS = tsActual.getIdTabla();
+			res = tsGlobal.buscaTipoPorId(idTS);
+		}
+		else
+			throw new Error("La sentencia return debe estar dentro de una funcion");
+		return res;
+	}
+
 	void SynErr (int n) {
 		if (errDist >= minErrDist) errors.SynErr(la.line, la.col, n);
 		errDist = 0;
@@ -266,7 +278,8 @@ public class Parser {
 		if (errDist >= minErrDist) errors.SemErr(t.line, t.col, msg);
 		errDist = 0;
 	}
-	
+
+	// Establece el token y lee el siguiente guardando en la
 	void Get () {
 		for (;;) {
 			t = la;
@@ -280,7 +293,8 @@ public class Parser {
 			la = t;
 		}
 	}
-	
+
+	// Si es el token esperado, lee el siguiente
 	void Expect (int n) {
 		if (la.kind==n) Get(); else { SynErr(n); }
 	}
@@ -311,381 +325,601 @@ public class Parser {
 		}
 	}
 	
-	void P() {
+	String P() {
+		String tipo = null;
 		if (StartOf(1)) {
 			// 1. P -> B P
 			boolean l = true;
 			pwP.print(" 1");
-			B();
+			String tipoB = B();
+			String tipoP1 = null;
 			if (StartOf(2)) {
-				P();
+				tipoP1 = P();
 				l = false;
 			}
 			// 3. P -> lambda
-			if (l) {pwP.print(" 3");/* tsActual.insertaLex("eof", false); tsActual.insertaTipo("eof", "pal. reservada");*/}
+			if (l) {
+				pwP.print(" 3");
+				tipoP1 = tipoNULO;
+			}
+			if (tipoB.equals(tipoOK) && tipoP1.equals(tipoOK))
+				tipo = tipoOK;
+			else if (tipoP1.equals(tipoNULO))
+				tipo = tipoB;
+			else
+				tipo = tipoERROR;
 		} else if (la.kind == 4) {
 			// 2. P -> F P
 			boolean l = true;
 			pwP.print(" 2");
-			F();
+			String tipoF = F();
+			String tipoP1 = null;
 			if (StartOf(2)) {
-				P();
+				tipoP1 = P();
 				l = false;
 			}
 			// 3. P -> lambda
-			if (l) {pwP.print(" 3");/* tsActual.insertaLex("eof", false); tsActual.insertaTipo("eof", "pal. reservada");*/}
+			if (l) {
+				pwP.print(" 3");
+				tipoP1 = tipoNULO;
+			}
+			if (tipoF.equals(tipoOK) && tipoP1.equals(tipoOK))
+				tipo = tipoOK;
+			else if (tipoP1.equals(tipoNULO))
+				tipo = tipoF;
+			else
+				tipo = tipoERROR;
 		} else SynErr(25);
+		return tipo;
 	}
 
-	void B() {
+	String B() {
+		String tipo = null;
 		if (la.kind == 10) {
 			// 4. B -> var T id
 			pwP.print(" 4");
 			Get();
-			T();
+			// el token es var
+			String tipoT = T();
 			Expect(1);
-			//TODO: Insertar el id de la funcion en la TS
+			if (tsActual.existeLex(t.val)) {
+				throw new Error("El id '" + t.val + "'ya ha sido declarado");
+			}
+			else{
+				insertaIdEnTSActual(t.val, tipoT);
+				tipo = tipoOK;
+			}
 			// Añade el token id en la lista de tokens con su posicion en la TS
 			pwLT.println("< " + t.val + " , " + tsActual.buscaReg(t.val) + " >");
 		} else if (StartOf(3)) {
 			// 5. B -> S
 			pwP.print(" 5");
-			S();
+			tipo = S();
 		} else if (la.kind == 8) {
 			// 6. B -> if ( E ) I
 			pwP.print(" 6");
 			Get();
 			Expect(20);
-			E();
+			String tipoE = E();
 			Expect(21);
-			I();
+			String tipoI = I();
+			if (tipoE.equals(tipoBool))
+				tipo = tipoI;
+			else
+				throw new Error("La expresion condicional del if debe ser de tipo bool");
 		} else SynErr(26);
+		return tipo;
 	}
 
-	void F() {
+	String F() {
 		// 29. F -> function H id ( A ) { C }
+		String tipo= null;
+		String tipoH = null;
+		LinkedList<String[]> tipoAConParams = null;
+		String tipoC = null;
+		int nParams = 0;
 		boolean lH = true;
 		boolean lA = true;
 		pwP.print(" 29");
 		Expect(4);
 		if (la.kind == 11 || la.kind == 12 || la.kind == 13) {
-			H();
+			tipoH = H();
 			lH = false;
 		}
 		// 31. H -> lambda
-		if (lH) pwP.print(" 31");
+		if (lH){
+			pwP.print(" 31");
+			tipoH = tipoNULO;
+		}
 		Expect(1);
-		//TODO: Insertar el id de la funcion en la TS
+		String lexId = t.val;
+		if (tsActual.existeLex(lexId))
+			throw new Error("El id '" + lexId + "'ya ha sido declarado");
 		// Añade el token id en la lista de tokens con su posicion en la TS
 		pwLT.println("< " + t.val + " , " + tsActual.buscaReg(t.val) + " >");
 		Expect(20);
 		if (la.kind == 11 || la.kind == 12 || la.kind == 13) {
-			A();
+			tipoAConParams = A();
 			lA = false;
 		}
-		// 33. H -> lambda
+		// 33. A -> lambda
 		if (lA) pwP.print(" 33");
 		Expect(21);
+		// Acciones semanticas
+
+		// Para sacar los nombres de los parametros
+		LinkedList<String> tipoParams = new LinkedList<>();;
+		if (!(tipoAConParams == null)) {
+			nParams = tipoAConParams.size();
+			ListIterator it = tipoAConParams.listIterator();
+			while (it.hasNext()){
+				String[] tipoP = (String[]) it.next();
+				tipoParams.add(tipoP[1]);
+			}
+		}
+		insertaFuncionEnTSActual(lexId, tipoH, idTabla + 1, nParams, tipoParams);
 		Expect(22);
-		C();
+		createAndPushTS(lexId);
+		// Inserta los parametros en la TS de la funcion
+		if (!(tipoAConParams == null)){
+			ListIterator it = tipoAConParams.listIterator();
+			int i = 1;
+			while (it.hasNext()){
+				String[] param = (String[]) it.next();
+				insertaIdEnTSActual(param[0], param[1]);
+				i++;
+			}
+		}
+		tipoC = C();
+		popTS();
 		Expect(23);
+		if (!tipoC.equals(tipoERROR))
+			tipo = tipoOK;
+		else
+			tipo = tipoERROR;
+		return tipo;
 	}
 
-	void T() {
+	String T() {
+		String tipo = null;
 		if (la.kind == 11) {
 			// 11. T -> int
 			pwP.print(" 11");
+			tipo = tipoInt;
 			Get();
 		} else if (la.kind == 12) {
 			// 12. T -> bool
 			pwP.print(" 12");
+			tipo = tipoBool;
 			Get();
 		} else if (la.kind == 13) {
 			// 13. T -> chars
 			pwP.print(" 13");
+			tipo = tipoChars;
 			Get();
 		} else SynErr(27);
+		return tipo;
 	}
 
-	void S() {
+	String S() {
 		// 14. S -> id X
+		String tipo = null;
 		if (la.kind == 1) {
 			pwP.print(" 14");
 			Get();
-			X();
+			String lexId = t.val;
+			Object tipoX = X();
+			if (tipoX instanceof LinkedList) {
+				if (comparaTipoParametros(tsGlobal.buscaTipoParametros(lexId), (LinkedList<String>) tipoX))
+					tipo = tipoOK;
+				else
+					throw new Error("Los argumentos no coinciden con los argumentos declarados para la funcion '" + lexId + "'");
+			} else if (tsActual.buscaTipo(lexId).equals(tipoX))
+				tipo = tipoOK;
+			else if (t.val.equals(")"))
+				throw new Error("Los argumentos no coinciden con los argumentos declarados para la funcion '" + lexId + "'");
+			else
+				throw new Error("El tipo del valor a asignar no coincide con el tipo de la variable a ser asignada");
 		} else if (la.kind == 7) {
 			// 15. S -> return J
 			boolean l = true;
 			pwP.print(" 15");
 			Get();
+			String tipoJ = null;
 			if (StartOf(4)) {
-				J();
+				tipoJ = J();
 				l = false;
 			}
 			// 21. J -> lambda
-			if (l) pwP.print(" 21");
+			if (l){
+				pwP.print(" 21");
+				tipoJ = tipoNULO;
+			}
+			if (buscaTipoRetorno().equals(tipoJ))
+				tipo = tipoOK;
+			else
+				throw new Error("La sentencia return devuelve un tipo incorrecto");
 		} else if (la.kind == 5) {
 			// 16. S -> write ( E )
 			pwP.print(" 16");
 			Get();
 			Expect(20);
-			E();
+			String tipoE = E();
 			Expect(21);
+			if (tipoE.equals(tipoInt) || tipoE.equals(tipoChars))
+				tipo = tipoOK;
+			else
+				throw new Error("La sentencia write solo evalua expresiones de tipo int o chars");
 		} else if (la.kind == 6) {
 			// 17. S -> prompt ( id )
 			pwP.print(" 17");
 			Get();
 			Expect(20);
 			Expect(1);
+			if (tsActual.buscaTipo(t.val).equals(tipoInt) || tsActual.buscaTipo(t.val).equals(tipoChars))
+				tipo = tipoOK;
+			else
+				throw new Error("La sentencia prompt solo almacena en variables de tipo int o chars");
 			Expect(21);
 		} else SynErr(28);
+		return tipo;
 	}
 
-	void E() {
+	String E() {
+		String tipo = null;
 		// 36. E -> W R
 		boolean l = true;
 		pwP.print(" 36");
-		W();
+		String tipoW = W();
+		String tipoR = null;
 		if (la.kind == 15) {
-			R();
+			tipoR = R();
 			l = false;
 		}
 		// 38. R -> lambda
-		if (l) pwP.print(" 38");
+		if (l){
+			pwP.print(" 38");
+			tipoR = tipoNULO;
+		}
+		if (tipoR.equals(tipoBool) && tipoW.equals(tipoBool))
+			tipo = tipoW;
+		else if (tipoR.equals(tipoNULO))
+			tipo = tipoW;
+		else
+			throw new Error(" La operacion AND se debe realizar con tipos bool");
+		return tipo;
 	}
 
-	void I() {
+	String I() {
+		String tipo = null;
 		if (StartOf(3)) {
 			// 7. I -> S
 			pwP.print(" 7");
-			S();
+			tipo = S();
 		} else if (la.kind == 22) {
 			// 8. I -> { C } M
 			boolean l = true;
 			pwP.print(" 8");
 			Get();
-			C();
+			String tipoC = C();
+			String tipoM = null;
 			Expect(23);
 			if (la.kind == 9) {
-				M();
+				tipoM = M();
 				l = false;
 			}
 			// 10. M -> lambda
-			if (l) pwP.print(" 10");
+			if (l){
+				pwP.print(" 10");
+				tipoM = tipoNULO;
+			}
+			if (tipoC.equals(tipoOK) && tipoM.equals(tipoOK))
+				tipo = tipoOK;
+			else if (tipoM.equals(tipoNULO))
+				tipo = tipoC;
+			else
+				tipo = tipoERROR;
 		} else SynErr(29);
+		return tipo;
 	}
 
-	void C() {
+	String C() {
+		String tipo = null;
 		// 26. C -> B G
 		boolean l = true;
 		pwP.print(" 26");
-		B();
+		String tipoB = B();
+		String tipoG = null;
 		if (StartOf(1)) {
-			G();
+			tipoG = G();
 			l = false;
 		}
 		// 28. G -> lambda
-		if (l) pwP.print(" 28");
+		if (l){
+			pwP.print(" 28");
+			tipoG = tipoNULO;
+		}
+		if (tipoB == null)
+			throw new Error("El cuerpo no puede estar vacio");
+		if (tipoB.equals(tipoOK) && tipoG.equals(tipoOK))
+			tipo = tipoOK;
+		else if (tipoG.equals(tipoNULO))
+			tipo = tipoB;
+		else
+			tipo = tipoERROR;
+		return tipo;
 	}
 
-	void M() {
+	String M() {
 		// 9. M -> else { C }
 		pwP.print(" 9");
 		Expect(9);
 		Expect(22);
-		C();
+		String tipo = C();
 		Expect(23);
+		return tipo;
 	}
 
-	void X() {
+	Object X() {
+		Object tipo = null;
 		if (la.kind == 14) {
 			// 18. X -> = E
 			pwP.print(" 18");
 			Get();
-			E();
+			tipo = E();
 		} else if (la.kind == 20) {
 			// 19. X -> ( L )
 			boolean l = true;
 			pwP.print(" 19");
 			Get();
 			if (StartOf(4)) {
-				L();
+				tipo = L();
 				l = false;
 			}
 			Expect(21);
 			// 23. L -> lambda
-			if (l) pwP.print(" 23");
+			if (l){
+				pwP.print(" 23");
+				tipo = tipoNULO;
+			}
 		} else SynErr(30);
+		return tipo;
 	}
 
-	void J() {
+	String J() {
 		// 20. J -> E
 		pwP.print(" 20");
-		E();
+		String tipo = E();
+		return tipo;
 	}
 
-	void L() {
+	LinkedList<String> L() {
 		// 22. L -> E Q
+		LinkedList<String> res = new LinkedList<>();
 		boolean l = true;
 		pwP.print(" 22");
-		E();
+		String tipoE = E();
+		res.add(tipoE);
 		if (la.kind == 19) {
-			Q();
+			Q(res);
 			l = false;
 		}
 		// 25. Q -> lambda
-		if (l) pwP.print(" 25");
+		if (l){
+			pwP.print(" 25");
+		}
+		return res;
 	}
 
-	void Q() {
+	LinkedList<String> Q(LinkedList<String> list) {
 		// 24. Q -> , E Q
 		boolean l = true;
 		pwP.print(" 24");
 		Expect(19);
-		E();
+		String tipoE = E();
+		list.add(tipoE);
 		if (la.kind == 19) {
-			Q();
+			Q(list);
 			l = false;
 		}
 		// 25. Q -> lambda
 		if (l) pwP.print(" 25");
+		return list;
 	}
 
-	void G() {
+	String G() {
 		// 27. G -> C
 		pwP.print(" 27");
-		C();
+		String tipo = C();
+		return tipo;
 	}
 
-	void H() {
+	String H() {
 		// 30. H -> T
 		pwP.print(" 30");
-		T();
+		String tipo = T();
+		return tipo;
 	}
 
-	void A() {
+	LinkedList<String[]> A() {
 		// 32. A -> T id K
+		LinkedList<String[]> res = new LinkedList<>();
 		boolean l = true;
 		pwP.print(" 32");
-		T();
+		String tipoT = T();
 		Expect(1);
+		String[] p = {t.val, tipoT};
+		res.add(p);
 		if (la.kind == 19) {
-			K();
+			K(res);
 			l = false;
 		}
 		// 35. K -> lambda
 		if (l) pwP.print(" 35");
+		return res;
 	}
 
-	void K() {
+	LinkedList<String[]> K(LinkedList<String[]> list) {
 		// 34. K -> , T id K
 		boolean l = true;
 		pwP.print(" 34");
 		Expect(19);
-		T();
+		String tipoT = T();
 		Expect(1);
+		String[] p = {t.val, tipoT};
+		list.add(p);
 		if (la.kind == 19) {
-			K();
+			K(list);
 			l = false;
 		}
 		// 35. K -> lambda
 		if (l) pwP.print(" 35");
+		return list;
 	}
 
-	void W() {
+	String W() {
+		String tipo = null;
 		// 39. W -> U D
 		boolean l = true;
 		pwP.print(" 39");
-		U();
+		String tipoU = U();
+		String tipoD = null;
 		if (la.kind == 16) {
-			D();
+			tipoD = D();
 			l = false;
 		}
 		// 41. D -> lambda
-		if (l) pwP.print(" 41");
+		if (l){
+			pwP.print(" 41");
+			tipoD = tipoNULO;
+		}
+		if (tipoD.equals(tipoInt) && tipoU.equals(tipoInt))
+			tipo = tipoBool;
+		else if (tipoD.equals(tipoNULO))
+			tipo = tipoU;
+		else
+			throw new Error("No se pueden comparar tipos distintos");
+		return tipo;
 	}
 
-	void R() {
+	String R() {
 		// 37. R -> && W
 		pwP.print(" 37");
 		Expect(15);
-		W();
+		String tipo = W();
+		return tipo;
 	}
 
-	void U() {
+	String U() {
 		// 42. U -> V Z
+		String tipo = null;
 		boolean l = true;
 		pwP.print(" 42");
-		V();
+		String tipoV = V();
+		String tipoZ = null;
 		if (la.kind == 17) {
-			Z();
+			tipoZ = Z();
 			l = false;
 		}
 		// 44. Z -> lambda
-		if (l) pwP.print(" 44");
+		if (l){
+			pwP.print(" 44");
+			tipoZ = tipoNULO;
+		}
+		if (tipoZ.equals(tipoInt) && tipoV.equals(tipoInt))
+			tipo = tipoV;
+		else if (tipoZ.equals(tipoNULO))
+			tipo = tipoV;
+		else
+			throw new Error("La suma debe ser entre tipos int");
+		return tipo;
 	}
 
-	void D() {
+	String D() {
 		// 40. D -> != U
 		pwP.print(" 40");
 		Expect(16);
-		U();
+		String tipo = U();
+		return tipo;
 	}
 
-	void V() {
+	String V() {
+		String tipo = null;
 		if (la.kind == 1) {
 			// 45. V -> id Y
 			pwP.print(" 45");
 			Get();
-			Y();
+			// el token es id
+			String lexId = t.val;
+			Object tipoY = Y();
+			if (tsActual.buscaTipo(lexId).equals(tipoInt) && tipoY.equals(tipoOK)){
+				tipo = tsActual.buscaTipo(lexId);
+			}
+			else if (tipoY.equals(tipoNULO))
+				tipo = tsActual.buscaTipo(lexId);
+			else if (comparaTipoParametros(tsActual.buscaTipoParametros(lexId), (LinkedList<String>) tipoY))
+				tipo = tsActual.buscaTipo(lexId);
+			else
+				throw new Error("No se puede decrementar un tipo diferente de int o los tipos de los parametros de la funcion no son correctos");
 		} else if (la.kind == 2) {
 			// 46. V -> entero
 			pwP.print(" 46");
 			Get();
+			tipo = tipoInt;
 		} else if (la.kind == 3) {
 			// 47. V -> cadena
 			pwP.print(" 47");
 			Get();
+			tipo = tipoChars;
 		} else if (la.kind == 20) {
 			// 48. V -> ( E )
 			pwP.print(" 48");
 			Get();
-			E();
+			tipo = E();
 			Expect(21);
 		} else SynErr(31);
+		return tipo;
 	}
 
-	void Z() {
+	String Z() {
 		// 43. Z -> + V
 		pwP.print(" 43");
 		Expect(17);
-		V();
+		String tipo = V();
+		return tipo;
 	}
 
-	void Y() {
+	Object Y() {
+		Object tipo = null;
 		if (StartOf(5)) {
 			// 49. Y -> N
 			boolean l = true;
 			pwP.print(" 49");
 			if (la.kind == 18) {
-				N();
+				tipo = N();
 				l = false;
 			}
 			// 52. N -> lambda
-			if (l) pwP.print(" 52");
+			if (l){
+				pwP.print(" 52");
+				tipo = tipoNULO;
+			}
 		} else if (la.kind == 20) {
 			// 50. Y -> ( E )
 			pwP.print(" 50");
 			Get();
-			E();
+			tipo = E();
 			Expect(21);
 		} else SynErr(32);
+		return tipo;
 	}
 
-	void N() {
+	String N() {
 		// 51. N -> --
 		pwP.print(" 51");
+		String tipo = tipoOK;
 		Expect(18);
+		return tipo;
 	}
 
 
@@ -698,9 +932,11 @@ public class Parser {
 		insertaPalReservadas();
 		pilaTS.add(tsGlobal);
 		tsActual = tsGlobal;
-		P();
+		String tipo = P();
 		Expect(0);
 		closeFiles();
+		if (tipo.equals(tipoERROR))
+			throw new Error("El fichero tiene algun error semantico");
 	}
 
 	private static final boolean[][] set = {
